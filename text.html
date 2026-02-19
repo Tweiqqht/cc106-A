@@ -3,38 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Read GitHub File</title>
+    <title>GitHub Image Fetcher</title>
 </head>
 <body>
 
-    <h2>Read File from GitHub</h2>
-    <button onclick="fetchGitHubFile()">Fetch File</button>
-    <pre id="file-content">File content will appear here...</pre>
+    <h1>GitHub Image Fetcher</h1>
+    <button onclick="fetchPrivateGitHubFile()">Fetch File</button>
+    <pre id="image-container">File content will appear here...</pre>
 
     <script>
-        async function fetchGitHubFile() {
-            const owner = "Tweiqqht";  // Replace with the repository owner
-            const repo = "cc106-A";    // Replace with the repository name
-            const filePath = "text2.html"; // Replace with the file path
+        async function fetchPrivateGitHubFile() {
+            const username = "allyssaledesma27";  // Replace with the repository owner
+            const repoName = "YourLastname_Activity4";    // Replace with the repository name
+            const filePath = "BlackandCat.jpg"; // Replace with the file path
             const branch = "main";       // Replace with the branch name
 
-            const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
+            const token = "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"; // 🔒 Replace with your PAT
 
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status} ${response.statusText}`);
-                }
 
-                const data = await response.json();
-                const content = atob(data.content); // Decode Base64 content
+        const url = `https://api.github.com/repos/${username}/${repoName}/contents/${filePath}`;
 
-                document.getElementById("file-content").textContent = content;
-            } catch (error) {
-                console.error("Error fetching file:", error);
-                document.getElementById("file-content").textContent = "Failed to load file.";
+        // Fetch the image from GitHub API
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                "Accept": "application/vnd.github.v3+json"
             }
-        }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.content) {
+                // GitHub returns the file content as Base64 if the file is small
+                const base64Image = data.content;
+                const imageUrl = `data:${data.encoding};base64,${base64Image}`;
+                
+                // Create an image element and set its src to the Base64 URL
+                const img = new Image();
+                img.src = imageUrl;
+
+                // Append the image to the DOM (inside the image container)
+                document.getElementById('image-container').appendChild(img);
+            } else {
+                console.error('Error: Image not found or the file is too large.');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching image from GitHub:', error);
+        });
+    }
     </script>
 
 </body>
